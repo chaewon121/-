@@ -3,131 +3,153 @@
 #include <stdlib.h>
 #pragma warning (disable:4996)
 
+
+
+
+typedef struct ListNode {
+    char data[10];
+    struct ListNode* link;
+}listNode;
+
 typedef struct {
-	char name[100];
-} element;
+    listNode* head;
+}linkedList_h;
 
-typedef struct ListNode { 
-	// 노드 타입
-	element data;
-	struct ListNode* link;
-} ListNode;
-// 오류 처리 함수
+linkedList_h* createLinkedList_h(void);
+void freeLinkedList(linkedList_h*);
+void addLastNode(linkedList_h*, char*);
+void reverse(linkedList_h*);
+void deleteLastNode(linkedList_h*);
+void printList(linkedList_h*);
 
-void error(char* message)
-{
-	printf(stderr, "%s\n", message);
-	exit(1);
-}
-//헤드노드 생성
-ListNode* insert_first(ListNode* head, element value)
-{
-	ListNode* p = (ListNode*)malloc(sizeof(ListNode)); //(1)
-	p->data = value; // (2)
-	p->link = head; // 헤드 포인터의 값을 복사 //(3)
-	head = p; // 헤드 포인터 변경 //(4)
-	return head;
+linkedList_h* createLinkedList_h(void) {
+    linkedList_h* L;
+    L = (linkedList_h*)malloc(sizeof(linkedList_h));
+    L->head = NULL;
+    return L;
 }
 
-void print_list(ListNode* head)
-{
-	for (ListNode* p = head; p != NULL; p = p->link)
-		printf("%s->", p->data.name);
-	printf("NULL \n");
+void addLastNode(linkedList_h* L, char* x) {
+    listNode* newNode;
+    listNode* p;
+    newNode = (listNode*)malloc(sizeof(listNode));
+    strcpy(newNode->data, x);
+    newNode->link = NULL;
+    if (L->head == NULL) {
+        L->head = newNode;
+        return;
+    }
+    p = L->head;
+    while (p->link != NULL) {
+        p = p->link;
+    }
+    p->link = newNode;
 }
 
-ListNode* search_list(ListNode* head, element x)
-{
-	ListNode* p = head;
-	while (p != NULL) {
-		if (strcmp(p->data.name,x.name)==0) 
-			return p;
-		p = p->link;
-	}
-	return NULL; // 탐색 실패
-}
+void reverse(linkedList_h* L) {
+    listNode* p;
+    listNode* q;
+    listNode* r;
 
-//두개의 리스트 연결
+    p = L->head;
+    q = NULL;
+    r = NULL;
 
-ListNode* concat_list(ListNode* head1, ListNode* head2) {
-	if (head1 == NULL)
-		return head2;
-	else if (head2 == NULL)
-		return head1;
-	else {
-		ListNode* p;
-		p = head1;
-		while (p->link != NULL)
-			p = p->link;
-		p->link = head2;
-		return head1;
-	}
+    while (p != NULL) {
+        r = q;
+        q = p;
+        p = p->link;
+        q->link = r;
+    }
+    L->head = q;
 
 }
 
-ListNode* reverse(ListNode* head)
-{
-	ListNode* p, * q, * r;
+//    temp = a;
+//    a     = b;
+//    b     = temp;
 
-	p = head;
-	q = NULL;
-
-	while (p != NULL)
-	{
-		r = q;
-		q = p;
-		p = p->link;
-		q->link = r;
-	}
-	return q;
+void deleteLastNode(linkedList_h* L) {
+    listNode* previous;
+    listNode* current;
+    if (L->head == NULL) {
+        return;
+    }
+    if (L->head->link == NULL) {    // head가 가르키는 링크가 NULL이냐 = head가 하나의 노드 가르키고 있다는 거
+        free(L->head);    // 지움
+        L->head = NULL;    // L이 가르키는 head 주소값 초기화
+        return;
+    }
+    else {
+        previous = L->head;
+        current = L->head->link;
+        while (current->link != NULL) {
+            previous = current;
+            current = current->link;
+        }
+        free(current);
+        previous->link = NULL;
+    }
 }
 
-void main(void)
-{
-	ListNode* head = NULL;
-	ListNode* head2 = NULL;
-	ListNode* concat = NULL;
-	ListNode* reverse_list = NULL;
-	element data;
-
-	strcpy(data.name, "APPLE");
-	head = insert_first(head, data);
-	print_list(head);
-
-	strcpy(data.name, "KIWI");
-	head = insert_first(head, data);
-	print_list(head);
-
-	strcpy(data.name, "BANANA");
-	head = insert_first(head, data);
-	print_list(head);
-
-	strcpy(data.name, "추가1");
-	head2 = insert_first(head2, data);
-	print_list(head);
-
-	strcpy(data.name, "추가2");
-	head2 = insert_first(head2, data);
-	print_list(head);
-
-	printf("찾기시스템 \n");
-	strcpy(data.name, "KIWI");
-	if (search_list(head, data) != NULL)
-		printf("리스트에서 KIWI을 찾았습니다. \n");
-	else
-		printf("리스트에서 KIWI을 찾지 못했습니다. \n");
-
-	printf("두노드 연결하기 \n");
-	if (search_list(head, data) != NULL)
-		printf("리스트에서 KIWI을 찾았습니다. \n");
-	else
-		printf("리스트에서 KIWI을 찾지 못했습니다. \n");
-	concat=concat_list(head, head2);
-	print_list(concat);
-
-	reverse_list = reverse(concat);
-	print_list(reverse_list);
-
-	return 0;
+void freeLinkedList_h(linkedList_h* L) {
+    listNode* p;
+    while (L->head != NULL) {
+        p = L->head;
+        L->head = L->head->link;
+        free(p);
+        p = NULL;
+    }
 }
 
+void printList(linkedList_h* L) {
+    listNode* p;
+    printf("L=(");
+    p = L->head;
+    while (p != NULL) {
+        printf("%s", p->data);
+        p = p->link;
+        if (p != NULL) {
+            printf(",");
+        }
+    }
+    printf(")\n");
+}
+
+int main() {
+    linkedList_h* L;
+    L = createLinkedList_h();
+    printf("(1)공백 리스트 생성하기!\n");
+    printList(L);
+    getchar();
+
+    printf("(2)리스트에 3개의 노드 추가하기!\n");
+    addLastNode(L, "월");
+    addLastNode(L, "수");
+    addLastNode(L, "금");
+    printList(L);
+    getchar();
+
+    printf("(3)리스트 마지막에 노드 한개 추가하기!\n");
+    addLastNode(L, "일");
+    printList(L);
+    getchar();
+
+    printf("(4)마지막 노드 삭제하기!\n");
+    deleteLastNode(L);
+    printList(L);
+    getchar();
+
+    printf("(5)리스트 원소를 역순으로 변환하기!\n");
+    reverse(L);
+    printList(L);
+    getchar();
+
+    printf("(6)리스트 공간을 해체하여, 공백 리스트 상태로 만들기!\n");
+    freeLinkedList_h(L);
+    printList(L);
+
+    getchar();
+
+    return 0;
+}
